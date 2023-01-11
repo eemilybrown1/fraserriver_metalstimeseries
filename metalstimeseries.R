@@ -397,7 +397,7 @@ metals_month_line_hope <-
 
 print(metals_month_line_hope)
 
-##Plotting by individual element
+##Plotting by individual element NEED TO CHANGE THIS TO HOPE
 
 weektimeseries <- function(y) {
   ggplot() +
@@ -427,3 +427,343 @@ monthtimeseries <- function(y) {
 
 Al_week <- weektimeseries(aluminum_total_ugL.1)
 Al_month <- monthtimeseries(aluminum_total_ugL.1)
+
+
+##GRAVESEND REACH
+
+gravesendmetals1 <- read.csv("gravesendmetals1.csv") %>%
+  rename("sample_time" = 1,
+         "sample_number" = 2,
+         "sample_type" = 3)
+gravesendmetals2 <- read.csv("gravesendmetals2.csv")%>%
+  rename("sample_time" = 1,
+         "sample_number" = 2,
+         "sample_type" = 3)
+gravesendmetals3 <- read.csv("gravesendmetals3.csv") %>%
+  rename("sample_time" = 1,
+         "sample_number" = 2,
+         "sample_type" = 3)
+gravesendmetals4 <- read.csv("gravesendmetals4.csv") %>%
+  rename("sample_time" = 1,
+         "sample_number" = 2,
+         "sample_type" = 3)
+gravesendmetals5 <- read.csv("gravesendmetals5.csv") %>%
+  rename("sample_time" = 1,
+         "sample_number" = 2,
+         "sample_type" = 3)
+gravesendmetals6 <- read.csv("gravesendmetals6.csv") %>%
+  rename("sample_time" = 1,
+         "sample_number" = 2,
+         "sample_type" = 3)
+
+##Joining to one sheet
+
+gravesendmetals <- gravesendmetals1 %>%
+  full_join(gravesendmetals2, 
+            by = c("sample_time", "sample_number", "sample_type")) %>%
+  full_join(gravesendmetals3, 
+            by = c("sample_time", "sample_number", "sample_type")) %>%
+  full_join(gravesendmetals4, 
+            by = c("sample_time", "sample_number", "sample_type")) %>%
+  full_join(gravesendmetals5, 
+            by = c("sample_time", "sample_number", "sample_type")) %>%
+  full_join(gravesendmetals6, 
+            by = c("sample_time", "sample_number", "sample_type"))
+
+##Removing an error variable
+gravesendmetals <- gravesendmetals %>%
+  filter(if_all(everything(), ~!grepl(-999999.000, .)))
+
+##Adding week and month variable to metals df
+gravesendmetals <- gravesendmetals %>%
+  mutate(week = lubridate::isoweek(sample_time),
+         month = lubridate::month(sample_time)) %>%
+  relocate(c("week", "month"), .after = sample_time) %>%
+  mutate(week = factor(week),
+         month = factor(month))
+
+
+##Creating mean dataframes for weeks and months
+gravesend_meanweeks <-
+  gravesendmetals %>%
+  group_by(lubridate::isoweek(sample_time)) %>%
+  summarize_at(vars(aluminum_total_ugL.1:zirconium_total_ugL.1),
+               mean,
+               na.rm=TRUE) %>%
+  rename("week" = "lubridate::isoweek(sample_time)") %>%
+  mutate(week = factor(week))
+
+gravesend_meanmonths <-
+  gravesendmetals %>%
+  group_by(lubridate::month(sample_time)) %>%
+  summarize_at(vars(aluminum_total_ugL.1:zirconium_total_ugL.1),
+               mean,
+               na.rm=TRUE) %>%
+  rename("month" = "lubridate::month(sample_time)") %>%
+  mutate(month = factor(month))
+
+#Plotting week line plots
+
+gravesend_weeklineplots <- function(y) {
+  ggplot() +
+    geom_line(data = gravesend_meanweeks,
+              aes(x = week,
+                  y={{y}},
+                  group = 1)) +
+    scale_x_discrete(breaks=seq(1,52,13)) +
+    theme_light()
+}
+
+Al_week_line_gravesend <- gravesend_weeklineplots(aluminum_total_ugL.1)
+Sb_week_line_gravesend <- gravesend_weeklineplots(antimony_total_ugL.1)
+As_week_line_gravesend <- gravesend_weeklineplots(arsenic_total_ugL.1)
+Ba_week_line_gravesend <- gravesend_weeklineplots(barium_total_ugL.1)
+Be_week_line_gravesend <- gravesend_weeklineplots(beryllium_total_ugL.1)
+Bi_week_line_gravesend <- gravesend_weeklineplots(bismuth_total_ugL.1)
+B_week_line_gravesend <- gravesend_weeklineplots(boron_total_ugL.1)
+Cd_week_line_gravesend <- gravesend_weeklineplots(cadmium_total_ugL.1)
+Ce_week_line_gravesend <- gravesend_weeklineplots(cerium_total_ugL.1)
+Cs_week_line_gravesend <- gravesend_weeklineplots(cesium_total_ugL.1)
+Cr_week_line_gravesend <- gravesend_weeklineplots(chromium_total_ugL.1)
+Co_week_line_gravesend <- gravesend_weeklineplots(cobalt_total_ugL.1)
+Cu_week_line_gravesend <- gravesend_weeklineplots(copper_total_ugL.1)
+Eu_week_line_gravesend <-gravesend_weeklineplots(europium_total_ugL.1)
+Gd_week_line_gravesend <- gravesend_weeklineplots(gadolinium_totalrecoverable_ugL.1)
+Ga_week_line_gravesend <- gravesend_weeklineplots(gallium_total_ugL.1)
+Ge_week_line_gravesend <- gravesend_weeklineplots(germanium_total_ugL.1)
+Hf_week_line_gravesend <- gravesend_weeklineplots(hafnium_total_ugL.1)
+Ho_week_line_gravesend <- gravesend_weeklineplots(holmium_total_ugL.1)
+In_week_line_gravesend <- gravesend_weeklineplots(indium_total_ugL.1)
+Fe_week_line_gravesend <- gravesend_weeklineplots(iron_total_ugL.1)
+La_week_line_gravesend <- gravesend_weeklineplots(lanthanum_total_ugL.1)
+Pb_week_line_gravesend <- gravesend_weeklineplots(lead_total_ugL.1)
+Li_week_line_gravesend <- gravesend_weeklineplots(lithium_total_ugL.1)
+Lu_week_line_gravesend <- gravesend_weeklineplots(lutetium_total_ugL.1)
+Mn_week_line_gravesend <- gravesend_weeklineplots(manganese_total_ugL.1)
+Mo_week_line_gravesend <- gravesend_weeklineplots(molybdenum_total_ugL.1)
+Nd_week_line_gravesend <- gravesend_weeklineplots(neodymium_total_ugL.1)
+Ni_week_line_gravesend <- gravesend_weeklineplots(nickel_total_ugL.1)
+Nb_week_line_gravesend <- gravesend_weeklineplots(niobium_total_ugL.1)
+Pd_week_line_gravesend <- gravesend_weeklineplots(palladium_total_ugL.1)
+Pt_week_line_gravesend <- gravesend_weeklineplots(platinum_total_ugL.1)
+Pr_week_line_gravesend <- gravesend_weeklineplots(praseodymium_total_ugL.1)
+Rb_week_line_gravesend <- gravesend_weeklineplots(rubidium_total_ugL.1)
+Ru_week_line_gravesend <- gravesend_weeklineplots(ruthenium_total_ugL.1)
+Sm_week_line_gravesend <- gravesend_weeklineplots(samarium_total_ugL.1)
+Sc_week_line_gravesend <- gravesend_weeklineplots(scandium_total_ugL.1)
+Se_week_line_gravesend <- gravesend_weeklineplots(selenium_total_ugL.1)
+Ag_week_line_gravesend <- gravesend_weeklineplots(silver_total_ugL.1)
+Sr_week_line_gravesend <- gravesend_weeklineplots(strontium_total_ugL.1)
+Te_week_line_gravesend <- gravesend_weeklineplots(tellurium_total_ugL.1)
+Tb_week_line_gravesend <- gravesend_weeklineplots(terbium_total_ugL.1)
+Tl_week_line_gravesend <- gravesend_weeklineplots(thallium_total_ugL.1)
+Sn_week_line_gravesend <- gravesend_weeklineplots(tin_total_ugL.1)
+Ti_week_line_gravesend <- gravesend_weeklineplots(titanium_total_ugL.1)
+W_week_line_gravesend <- gravesend_weeklineplots(tungsten_total_ugL.1)
+U_week_line_gravesend <- gravesend_weeklineplots(uranium_total_ugL.1)
+V_week_line_gravesend <- gravesend_weeklineplots(vanadium_total_ugL.1)
+Yb_week_line_gravesend <- gravesend_weeklineplots(ytterbium_total_ugL.1)
+Y_week_line_gravesend <- gravesend_weeklineplots(yttrium_total_ugL.1)
+Zn_week_line_gravesend <- gravesend_weeklineplots(zinc_total_ugL.1)
+Zr_week_line_gravesend <- gravesend_weeklineplots(zirconium_total_ugL.1)
+
+allmetals_week_line_gravesend <-
+  ggarrange(Ag_week_line_gravesend,
+            Al_week_line_gravesend,
+            As_week_line_gravesend,
+            B_week_line_gravesend,
+            Ba_week_line_gravesend,
+            Be_week_line_gravesend,
+            Bi_week_line_gravesend,
+            Cd_week_line_gravesend,
+            Ce_week_line_gravesend,
+            Co_week_line_gravesend,
+            Cr_week_line_gravesend,
+            Cs_week_line_gravesend,
+            Cu_week_line_gravesend,
+            Eu_week_line_gravesend,
+            Fe_week_line_gravesend,
+            Ga_week_line_gravesend,
+            Gd_week_line_gravesend,
+            Ge_week_line_gravesend,
+            Hf_week_line_gravesend,
+            Ho_week_line_gravesend,
+            In_week_line_gravesend,
+            La_week_line_gravesend,
+            Li_week_line_gravesend,
+            Lu_week_line_gravesend,
+            Mn_week_line_gravesend,
+            Mo_week_line_gravesend,
+            Nb_week_line_gravesend,
+            Nd_week_line_gravesend,
+            Ni_week_line_gravesend,
+            Pb_week_line_gravesend,
+            Pd_week_line_gravesend,
+            Pr_week_line_gravesend,
+            Pt_week_line_gravesend,
+            Rb_week_line_gravesend,
+            Ru_week_line_gravesend,
+            Sb_week_line_gravesend,
+            Sc_week_line_gravesend,
+            Se_week_line_gravesend,
+            Sm_week_line_gravesend,
+            Sn_week_line_gravesend,
+            Sr_week_line_gravesend,
+            Tb_week_line_gravesend,
+            Te_week_line_gravesend,
+            Ti_week_line_gravesend,
+            Tl_week_line_gravesend,
+            U_week_line_gravesend,
+            V_week_line_gravesend,
+            W_week_line_gravesend,
+            Y_week_line_gravesend,
+            Yb_week_line_gravesend,
+            Zn_week_line_gravesend,
+            Zr_week_line_gravesend,
+            ncol = 8, nrow = 7)
+
+print(allmetals_week_line_gravesend) #There are a bunch without any data so making a version without those
+
+metals_week_line_gravesend <-
+  ggarrange(Ag_week_line_gravesend,
+            Al_week_line_gravesend,
+            As_week_line_gravesend,
+            B_week_line_gravesend,
+            Ba_week_line_gravesend,
+            Be_week_line_gravesend,
+            Bi_week_line_gravesend,
+            Cd_week_line_gravesend,
+            Ce_week_line_gravesend,
+            Co_week_line_gravesend,
+            Cr_week_line_gravesend,
+            Cs_week_line_gravesend,
+            Cu_week_line_gravesend,
+            Fe_week_line_gravesend,
+            Ga_week_line_gravesend,
+            La_week_line_gravesend,
+            Li_week_line_gravesend,
+            Mn_week_line_gravesend,
+            Mo_week_line_gravesend,
+            Nb_week_line_gravesend,
+            Ni_week_line_gravesend,
+            Pb_week_line_gravesend,
+            Pt_week_line_gravesend,
+            Rb_week_line_gravesend,
+            Sb_week_line_gravesend,
+            Se_week_line_gravesend,
+            Sn_week_line_gravesend,
+            Sr_week_line_gravesend,
+            Ti_week_line_gravesend,
+            Tl_week_line_gravesend,
+            U_week_line_gravesend,
+            V_week_line_gravesend,
+            W_week_line_gravesend,
+            Y_week_line_gravesend,
+            Zn_week_line_gravesend,
+            ncol = 6, nrow = 6)
+
+print(metals_week_line_gravesend)
+
+#By month
+gravesend_monthlineplots <- function(y) {
+  ggplot() +
+    geom_line(data = gravesend_meanmonths,
+              aes(x = month,
+                  y={{y}},
+                  group = 1)) +
+    scale_x_discrete(breaks=seq(1,12,4)) +
+    theme_light()
+}
+
+Al_month_line_gravesend <- gravesend_monthlineplots(aluminum_total_ugL.1)
+Sb_month_line_gravesend <- gravesend_monthlineplots(antimony_total_ugL.1)
+As_month_line_gravesend <- gravesend_monthlineplots(arsenic_total_ugL.1)
+Ba_month_line_gravesend <- gravesend_monthlineplots(barium_total_ugL.1)
+Be_month_line_gravesend <- gravesend_monthlineplots(beryllium_total_ugL.1)
+Bi_month_line_gravesend <- gravesend_monthlineplots(bismuth_total_ugL.1)
+B_month_line_gravesend <- gravesend_monthlineplots(boron_total_ugL.1)
+Cd_month_line_gravesend <- gravesend_monthlineplots(cadmium_total_ugL.1)
+Ce_month_line_gravesend <- gravesend_monthlineplots(cerium_total_ugL.1)
+Cs_month_line_gravesend <- gravesend_monthlineplots(cesium_total_ugL.1)
+Cr_month_line_gravesend <- gravesend_monthlineplots(chromium_total_ugL.1)
+Co_month_line_gravesend <- gravesend_monthlineplots(cobalt_total_ugL.1)
+Cu_month_line_gravesend <- gravesend_monthlineplots(copper_total_ugL.1)
+Eu_month_line_gravesend <-gravesend_monthlineplots(europium_total_ugL.1)
+Gd_month_line_gravesend <- gravesend_monthlineplots(gadolinium_totalrecoverable_ugL.1)
+Ga_month_line_gravesend <- gravesend_monthlineplots(gallium_total_ugL.1)
+Ge_month_line_gravesend <- gravesend_monthlineplots(germanium_total_ugL.1)
+Hf_month_line_gravesend <- gravesend_monthlineplots(hafnium_total_ugL.1)
+Ho_month_line_gravesend <- gravesend_monthlineplots(holmium_total_ugL.1)
+In_month_line_gravesend <- gravesend_monthlineplots(indium_total_ugL.1)
+Fe_month_line_gravesend <- gravesend_monthlineplots(iron_total_ugL.1)
+La_month_line_gravesend <- gravesend_monthlineplots(lanthanum_total_ugL.1)
+Pb_month_line_gravesend <- gravesend_monthlineplots(lead_total_ugL.1)
+Li_month_line_gravesend <- gravesend_monthlineplots(lithium_total_ugL.1)
+Lu_month_line_gravesend <- gravesend_monthlineplots(lutetium_total_ugL.1)
+Mn_month_line_gravesend <- gravesend_monthlineplots(manganese_total_ugL.1)
+Mo_month_line_gravesend <- gravesend_monthlineplots(molybdenum_total_ugL.1)
+Nd_month_line_gravesend <- gravesend_monthlineplots(neodymium_total_ugL.1)
+Ni_month_line_gravesend <- gravesend_monthlineplots(nickel_total_ugL.1)
+Nb_month_line_gravesend <- gravesend_monthlineplots(niobium_total_ugL.1)
+Pd_month_line_gravesend <- gravesend_monthlineplots(palladium_total_ugL.1)
+Pt_month_line_gravesend <- gravesend_monthlineplots(platinum_total_ugL.1)
+Pr_month_line_gravesend <- gravesend_monthlineplots(praseodymium_total_ugL.1)
+Rb_month_line_gravesend <- gravesend_monthlineplots(rubidium_total_ugL.1)
+Ru_month_line_gravesend <- gravesend_monthlineplots(ruthenium_total_ugL.1)
+Sm_month_line_gravesend <- gravesend_monthlineplots(samarium_total_ugL.1)
+Sc_month_line_gravesend <- gravesend_monthlineplots(scandium_total_ugL.1)
+Se_month_line_gravesend <- gravesend_monthlineplots(selenium_total_ugL.1)
+Ag_month_line_gravesend <- gravesend_monthlineplots(silver_total_ugL.1)
+Sr_month_line_gravesend <- gravesend_monthlineplots(strontium_total_ugL.1)
+Te_month_line_gravesend <- gravesend_monthlineplots(tellurium_total_ugL.1)
+Tb_month_line_gravesend <- gravesend_monthlineplots(terbium_total_ugL.1)
+Tl_month_line_gravesend <- gravesend_monthlineplots(thallium_total_ugL.1)
+Sn_month_line_gravesend <- gravesend_monthlineplots(tin_total_ugL.1)
+Ti_month_line_gravesend <- gravesend_monthlineplots(titanium_total_ugL.1)
+W_month_line_gravesend <- gravesend_monthlineplots(tungsten_total_ugL.1)
+U_month_line_gravesend <- gravesend_monthlineplots(uranium_total_ugL.1)
+V_month_line_gravesend <- gravesend_monthlineplots(vanadium_total_ugL.1)
+Yb_month_line_gravesend <- gravesend_monthlineplots(ytterbium_total_ugL.1)
+Y_month_line_gravesend <- gravesend_monthlineplots(yttrium_total_ugL.1)
+Zn_month_line_gravesend <- gravesend_monthlineplots(zinc_total_ugL.1)
+Zr_month_line_gravesend <- gravesend_monthlineplots(zirconium_total_ugL.1)
+
+metals_month_line_gravesend <-
+  ggarrange(Ag_month_line_gravesend,
+            Al_month_line_gravesend,
+            As_month_line_gravesend,
+            B_month_line_gravesend,
+            Ba_month_line_gravesend,
+            Be_month_line_gravesend,
+            Bi_month_line_gravesend,
+            Cd_month_line_gravesend,
+            Ce_month_line_gravesend,
+            Co_month_line_gravesend,
+            Cr_month_line_gravesend,
+            Cs_month_line_gravesend,
+            Cu_month_line_gravesend,
+            Fe_month_line_gravesend,
+            Ga_month_line_gravesend,
+            La_month_line_gravesend,
+            Li_month_line_gravesend,
+            Mn_month_line_gravesend,
+            Mo_month_line_gravesend,
+            Nb_month_line_gravesend,
+            Ni_month_line_gravesend,
+            Pb_month_line_gravesend,
+            Pt_month_line_gravesend,
+            Rb_month_line_gravesend,
+            Sb_month_line_gravesend,
+            Se_month_line_gravesend,
+            Sn_month_line_gravesend,
+            Sr_month_line_gravesend,
+            Ti_month_line_gravesend,
+            Tl_month_line_gravesend,
+            U_month_line_gravesend,
+            V_month_line_gravesend,
+            W_month_line_gravesend,
+            Y_month_line_gravesend,
+            Zn_month_line_gravesend,
+            ncol = 6, nrow = 6)
+
+print(metals_month_line_gravesend)
