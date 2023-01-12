@@ -956,4 +956,65 @@ specificconductance_hope <-
 specificconductance_hope
 
 ###NEED TO COMBINE SPECIFIC CONDUCTANCE GRAPHS INTO ONE WITH SITE AS THE VARIABLE
-  
+hopespecificconductance <- hopespecificconductance %>%
+  mutate(site = "hope") %>%
+  relocate(site, .after = month)
+
+gravesendspecificconductance <- gravesendspecificconductance %>%
+  mutate(site = "gravesend") %>%
+  relocate(site, .after = month)  
+
+specificconductance <- hopespecificconductance %>%
+  full_join(gravesendspecificconductance, 
+            by = c("sample_time", "week", "month", "sample_number", "sample_type", "site", "specificconductance_useicm.1"))
+
+specificconductance_meanweeks <-
+  specificconductance %>%
+  group_by(lubridate::isoweek(sample_time), site) %>%
+  summarize_at("specificconductance_useicm.1",
+               mean,
+               na.rm=TRUE) %>%
+  rename("week" = "lubridate::isoweek(sample_time)") %>%
+  mutate(week = factor(week))
+
+specificconductance_meanmonths <-
+  specificconductance %>%
+  group_by(lubridate::month(sample_time), site) %>%
+  summarize_at("specificconductance_useicm.1",
+               mean,
+               na.rm=TRUE) %>%
+  rename("month" = "lubridate::month(sample_time)") %>%
+  mutate(month = factor(month))
+
+#plotting
+
+specificconductance_week <-
+  ggplot() +
+  geom_line(data = specificconductance_meanweeks,
+            aes(x = week,
+                y= specificconductance_useicm.1,
+                group = site,
+                colour = site)) +
+  geom_hline(yintercept = 1500) +
+  scale_x_discrete(breaks=seq(1,52,13)) +
+  theme_light()
+
+specificconductance_week
+
+specificconductance_month <-
+  ggplot() +
+  geom_line(data = specificconductance_meanmonths,
+            aes(x = month,
+                y= specificconductance_useicm.1,
+                group = site,
+                colour = site)) +
+  geom_hline(yintercept = 1500) +
+  scale_x_discrete(breaks=seq(1,12,4)) +
+  theme_light()
+specificconductance_month
+
+specificconductance <-
+  ggarrange(specificconductance_week, 
+            specificconductance_month,
+            nrow= 2, ncol=1)
+specificconductance
