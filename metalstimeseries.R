@@ -397,37 +397,53 @@ metals_month_line_hope <-
 
 print(metals_month_line_hope)
 
-##Plotting by individual element NEED TO CHANGE THIS TO HOPE
-
-weektimeseries <- function(y) {
+##Plotting by individual element
+weektimeseries <- function(pointdata, linedata, y) {
   ggplot() +
-    geom_point(data = metals,
+    geom_point(data = pointdata,
                aes(x = week,
                    y= {{y}}),
                alpha = 1/5)+
-    geom_line(data = meanweeks,
+    geom_line(data = linedata,
               aes(x = week,
                   y= {{y}},
                   group = 1)) +
     theme_light()
 }
 
-monthtimeseries <- function(y) {
+Al_week_hope <- weektimeseries(pointdata = hopemetals,
+                          linedata = hope_meanweeks,
+                          y = aluminum_total_ugL.1)
+Al_week_hope
+
+Al_week_gravesend <- weektimeseries(pointdata = gravesendmetals,
+                                    linedata = gravesend_meanweeks,
+                                    y = aluminum_total_ugL.1)
+Al_week_gravesend
+
+ggarrange(Al_week_hope, Al_week_gravesend,
+          labels = c("Hope", "Gravesend reach"),
+          hjust = c(-1.5, -.4),
+          vjust = 2,
+          nrow = 2, ncol = 1)
+
+monthtimeseries <- function(pointdata, linedata, y) {
   ggplot() +
-    geom_point(data = metals,
+    geom_point(data = pointdata,
                aes(x = month,
                    y= {{y}}),
                alpha = 1/5)+
-    geom_line(data = meanmonths,
+    geom_line(data = linedata,
               aes(x = month,
                   y= {{y}},
                   group = 1)) +
     theme_light()
 }
 
-Al_week <- weektimeseries(aluminum_total_ugL.1)
-Al_month <- monthtimeseries(aluminum_total_ugL.1)
-
+Al_month_hope <- monthtimeseries(pointdata = hopemetals,
+                            linedata = hope_meanmonths,
+                            y = aluminum_total_ugL.1)
+Al_month_hope
 
 ##GRAVESEND REACH
 
@@ -769,69 +785,7 @@ metals_month_line_gravesend <-
 print(metals_month_line_gravesend)
 
 
-##Looking at conductance to figure out why the gravesend values are so much lower
-
-gravesendconductance <- read.csv("gravesendconductance.csv") %>%
-  rename("sample_time" = 1,
-         "sample_number" = 2,
-         "sample_type" = 3)
-
-gravesendconductance <- gravesendconductance %>%
-  mutate(week = lubridate::isoweek(sample_time),
-         month = lubridate::month(sample_time)) %>%
-  relocate(c("week", "month"), .after = sample_time) %>%
-  mutate(week = factor(week),
-         month = factor(month))
-
-gravesend_conductance_meanweeks <-
-  gravesendconductance %>%
-  group_by(lubridate::isoweek(sample_time)) %>%
-  summarize_at("conductance_useicm.1",
-               mean,
-               na.rm=TRUE) %>%
-  rename("week" = "lubridate::isoweek(sample_time)") %>%
-  mutate(week = factor(week))
-
-gravesend_conductance_meanmonths <-
-  gravesendconductance %>%
-  group_by(lubridate::month(sample_time)) %>%
-  summarize_at("conductance_useicm.1",
-               mean,
-               na.rm=TRUE) %>%
-  rename("month" = "lubridate::month(sample_time)") %>%
-  mutate(month = factor(month))
-
-gravesend_conductance_week <-
-ggplot() +
-  geom_line(data = gravesend_conductance_meanweeks,
-            aes(x = week,
-                y= conductance_useicm.1,
-                group = 1)) +
-  geom_hline(yintercept = 1500) +
-  scale_x_discrete(breaks=seq(1,52,13)) +
-  theme_light()
-
-gravesend_conductance_week
-
-gravesend_conductance_month <-
-  ggplot() +
-  geom_line(data = gravesend_conductance_meanmonths,
-            aes(x = month,
-                y= conductance_useicm.1,
-                group = 1)) +
-  geom_hline(yintercept = 1500) +
-  scale_x_discrete(breaks=seq(1,12,4)) +
-  theme_light()
-gravesend_conductance_month
-
-conductance_gravesend <-
-  ggarrange(gravesend_conductance_week, 
-            gravesend_conductance_month,
-            nrow= 2, ncol=1)
-conductance_gravesend
-
-
-##Specific conductance
+##Looking at specific conductance to figure out why the gravesend values are so much lower
 
 #Gravesend
 gravesendspecificconductance <- read.csv("gravesendspecificconductance.csv") %>%
@@ -955,7 +909,7 @@ specificconductance_hope <-
             nrow= 2, ncol=1)
 specificconductance_hope
 
-###NEED TO COMBINE SPECIFIC CONDUCTANCE GRAPHS INTO ONE WITH SITE AS THE VARIABLE
+###Combining graphs to compare between sites
 hopespecificconductance <- hopespecificconductance %>%
   mutate(site = "hope") %>%
   relocate(site, .after = month)
@@ -986,7 +940,7 @@ specificconductance_meanmonths <-
   rename("month" = "lubridate::month(sample_time)") %>%
   mutate(month = factor(month))
 
-#plotting
+#plotting together
 
 specificconductance_week <-
   ggplot() +
