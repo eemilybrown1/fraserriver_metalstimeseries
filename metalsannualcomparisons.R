@@ -559,7 +559,94 @@ corrplot(cor_peakdays,
 #need to make it look better but got the info there
 
 
-###Need to make time series for all years, then maybe overlay them. Could do it by rainbow colour to see differences
+###Making time series for all years, then maybe overlay them. Could do it by rainbow colour to see differences
+hopemetalstbl_weeksbyyears <-
+  hopemetalstbl %>%
+  group_by(year, week) %>%
+  summarize(across(aluminum_total_ugL.1:zirconium_total_ugL.1, 
+                   mean = mean), 
+            na.rm = TRUE)
+
+hopemetals_weeksbyyears <- function(y) {
+  ggplot() +
+    geom_line(data = hopemetalstbl_weeksbyyears,
+              aes(x = week,
+                  y= {{y}},
+                  group = year,
+                  colour = year)) +
+    scale_x_discrete(breaks=seq(1,52,13)) +
+    scale_y_discrete() +
+    scale_colour_continuous(type = "viridis") +
+    theme_light()
+}
+
+#Aluminum
+aluminum_weeksbyyears <- hopemetals_weeksbyyears(aluminum_total_ugL.1)
+plot(aluminum_weeksbyyears)
+
+#Works on an individual, but won't work in a loop
+
+
+#Everything from here down doesn't work :(
+metalnames <- as.vector(colnames(hopemetalstbl_weeksbyyears[, c(3:54)]))
+metalnames <- noquote(across(metalnames))
+
+
+for(i in 3:ncol(hopemetalstbl_weeksbyyears)) {
+ print(hopemetals_weeksbyyears(
+   colnames(hopemetalstbl_weeksbyyears[i])
+ ))
+}
+
+
+
+hopemetals_weeksbyyears(aluminum_total_ugL.1)
+
+for (i in metalnames) {
+  print(hopemetals_weeksbyyears(i))
+}
+
+par(mfrow = c(6, 6))
+
+loop.vector <- 3:54
+
+for(i in loop.vector) {
+  
+  y <- hopemetalstbl_weeksbyyears[,i]
+  
+  ggplot() +
+    geom_line(data = hopemetalstbl_weeksbyyears,
+              aes(x = week,
+                  y= {{y}},
+                  group = year,
+                  colour = year)) +
+    scale_x_discrete(breaks=seq(1,52,13)) +
+    scale_y_discrete() +
+    scale_colour_continuous(type = "viridis") +
+    theme_light()
+}
+
+
+
+
+
+ggplot(
+) +
+    geom_line(data = hopemetalstbl_weeksbyyears,
+              aes(x = week,
+                  y= aluminum_total_ugL.1,
+                  group = year,
+                  colour = year)) +
+    scale_x_discrete(breaks=seq(1,52,13)) +
+    scale_colour_continuous(type = "viridis") +
+    theme_light()
+
+
+
+
+
+
+
 
 
 
